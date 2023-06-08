@@ -57,7 +57,7 @@ Column {.tabset}
 
 ### Map View
 
-Airbnb locations in New York City
+Airbnb locations in New York City\n
 
 ```{r}
 leaflet(df) %>%
@@ -88,13 +88,13 @@ leaflet(df) %>%
 
 ### Dataset
 
-Column names of the Dataset
+Column names of the Dataset\n
 
 ```{r}
 names(df)
 ```
 
-Summary of the Dataset
+Summary of the Dataset\n
 
 ```{r}
 datatable(summary(df))
@@ -102,7 +102,7 @@ datatable(summary(df))
 
 ### Histogram
 
-Histogram of airbnb room prices
+Histogram of airbnb room prices\n
 
 ```{r}
 ggplot(df, aes(x = price)) +
@@ -113,7 +113,7 @@ ggplot(df, aes(x = price)) +
 
 ### Multiple Boxplot
 
-Multiple boxplot based on building construction years according to the Neighborhood
+Multiple boxplot based on building construction years according to the Neighborhood\n
 
 ```{r, warning= F, message=F}
 ggplot(df, aes(x = neighbourhood_group, y = construction_year, fill = neighbourhood_group)) +
@@ -145,7 +145,7 @@ ggplot(df, aes(x = price, y = construction_year))+
 
 ### Plotly
 
-Listing count according to the Neighborhood
+Listing count according to the Neighborhood\n
 
 ```{r}
 library(plotly)
