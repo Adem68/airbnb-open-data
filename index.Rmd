@@ -8,7 +8,7 @@ output:
     theme:
       bg: "#101010"
       fg: "#FDF7F7" 
-      primary: "#ED79F9"
+      primary: "#0571ff"
       base_font:
         google: Prompt
       code_font:
