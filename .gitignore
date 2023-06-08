@@ -7,5 +7,4 @@ revdep/checks
 revdep/library
 revdep/cloud.noindex
 src/config.h
-docs/
 .vscode
