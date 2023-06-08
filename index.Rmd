@@ -1,0 +1,191 @@
+---
+title: "Airbnb Open Data - New York"
+description: "Data Visualization Final Project"
+author: "Adem Furkan Ozcan - 190527042"
+date: "`r Sys.Date()`"
+output:
+  flexdashboard::flex_dashboard:
+    theme:
+      bg: "#101010"
+      fg: "#FDF7F7" 
+      primary: "#ED79F9"
+      base_font:
+        google: Prompt
+      code_font:
+        google: JetBrains Mono
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+# Install the required packages
+# install.packages("leaflet")
+# install.packages("DT")
+# install.packages("flexdashboard")
+# install.packages("rio")
+# install.packages("tidyverse")
+# install.packages("janitor")
+knitr::opts_chunk$set(echo = FALSE)
+
+# Load the required packages
+library(leaflet)
+library(DT)
+library(flexdashboard)
+library(rio)
+library(tidyverse)
+library(janitor)
+
+# Import the dataset
+df <- read_csv("Airbnb_Open_Data.csv")
+
+## Data preparition
+
+# Remove non-numeric characters of price
+df$price <- parse_number(as.character(df$price))
+# Remove redundant columns
+redundant_cols <- c("id", "host_id")
+df[, redundant_cols] <- NULL
+# Normalizing the data
+df["neighbourhood_group"][df["neighbourhood_group"] == "manhatan"] <- "Manhattan"
+df["neighbourhood_group"][df["neighbourhood_group"] == "brookln"] <- "Brooklyn"
+df <- df %>% filter(neighbourhood_group != "")
+# Changing col name to rating
+colnames(df)[colnames(df) == 'review_rate_number'] <- 'rating'
+```
+
+Column {.tabset} 
+-------------------------------------
+
+### Map View
+
+Airbnb locations in New York City
+
+```{r}
+leaflet(df) %>%
+        setView(lng = -73.95, lat = 40.73, zoom = 10) %>%
+        addTiles() %>%
+        addMarkers(
+                lng = ~long,
+                lat = ~lat,
+                icon = makeIcon(
+                  iconUrl = "https://i.ibb.co/nB2K8k3/airbnb.png",
+                  iconWidth = 48,
+                  iconHeight = 48
+                ),
+                label = ~paste0("$", price, " - ", room_type, " - ", "Review: ", rating, " (", number_of_reviews, ")" ),
+                popup = ~paste0(
+                        name,
+                        "<br/><br/>",
+                        "Price: $", price,
+                        "<br/>",
+                        "Room Type: ", room_type,
+                        "<br/><br/>",
+                        "Address: ", neighbourhood_group, " - ", neighbourhood
+                ),
+                clusterOptions = markerClusterOptions()
+        ) %>%
+        addProviderTiles("CartoDB.Positron")
+```
+
+### Dataset
+
+Column names of the Dataset
+
+```{r}
+names(df)
+```
+
+Summary of the Dataset
+
+```{r}
+datatable(summary(df))
+```
+
+### Histogram
+
+Histogram of airbnb room prices
+
+```{r}
+ggplot(df, aes(x = price)) +
+  geom_histogram(color = "black", fill = "blue", bins = 30) +
+  theme_minimal() +
+  xlab("Price") + ylab("Frequency")
+```
+
+### Multiple Boxplot
+
+Multiple boxplot based on building construction years according to the Neighborhood
+
+```{r, warning= F, message=F}
+ggplot(df, aes(x = neighbourhood_group, y = construction_year, fill = neighbourhood_group)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    x = "Neighborhood",
+    y = "Construction Year",
+    title = "Building construction year based on the Neighborhood",
+    fill = "Neighborhood"
+  ) +
+  scale_color_viridis_d()
+```
+
+### Scatter Plot
+
+```{r}
+ggplot(df, aes(x = price, y = construction_year))+
+  geom_point()+
+  facet_grid(~neighbourhood_group~room_type)+
+  labs(
+    x = "Construction Year",
+    y = "Price",
+    title = "Construction Year vs Price",
+    subtitle = "Airbnb: Listings in New York"
+  ) +
+  scale_color_viridis_d()
+```
+
+### Plotly
+
+Listing count according to the Neighborhood
+
+```{r}
+library(plotly)
+
+plot1 <- ggplot(df, aes(x = neighbourhood_group, fill = neighbourhood_group)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(
+    x = "Neighborhood",
+    y = "Count",
+    title = "Listing count according to the Neighborhood",
+  ) +
+  scale_color_viridis_d()
+
+plotly::ggplotly(plot1)
+```
+
+### References
+
+[Data source](https://www.kaggle.com/datasets/arianazmoudeh/airbnbopendata)
+[The R Graph Gallery](https://r-graph-gallery.com/index.html)
+[rstudio/flexdashboard](https://github.com/rstudio/flexdashboard)
+[flexdashboard](https://pkgs.rstudio.com/flexdashboard/)
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Number of room
+```{r, fig.height=0.25}
+valueBox(nrow(df), icon = "fa-bed", color="rgb(236,101,100)")
+```
+
+### Average price per day
+```{r, fig.height=0.25}
+valueBox(round(mean(df$price, na.rm = T),0), icon = "fa-dollar-sign", color="rgb(77,100,100)")
+```
+
+### Average building age
+```{r, fig.height=0.25}
+# We need to calculate building age
+df$building_age <- year(now()) - df$construction_year
+valueBox(round(mean(df$building_age, na.rm = T),0), icon = "fa-building", color="rgb(100,163,186)")
+```

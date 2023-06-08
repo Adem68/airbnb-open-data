@@ -1,0 +1,6 @@
+name: "Airbnb Open Data - New York"
+navbar:
+  title: "Airbnb Open Data - New York"
+  left:
+    - text: "Home"
+      href: index.html
